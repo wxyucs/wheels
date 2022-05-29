@@ -8,3 +8,4 @@ cmake-build
 local.env
 compile_commands.json
 .cache
+*.swp

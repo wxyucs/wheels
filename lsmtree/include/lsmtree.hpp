@@ -9,4 +9,6 @@
 #include "lsmtree/expensive.hpp"
 #include "lsmtree/version.hpp"
 
+#include "lsmtree/memtable.hpp"
+
 #endif
