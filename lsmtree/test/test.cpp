@@ -65,7 +65,8 @@ TEST_CASE("test_engine_storage")
     fs::create_directory("/tmp/test_lsmtree");
     lsmtree::Engine engine("/tmp/test_lsmtree", 32);
     engine.Set("key1", "1234567890");
-    engine.Set("key2", "1234567890");
+    engine.Set("key2", "X");
+    engine.Set("key3", "1234567890");
 
     REQUIRE(true == fs::exists("/tmp/test_lsmtree/engine.meta"));
     int32_t numSegments;
@@ -79,9 +80,9 @@ TEST_CASE("test_engine_storage")
     buffer.resize(32);
     pFile = fopen("/tmp/test_lsmtree/0.data", "r");
     fread(buffer.data(), sizeof(char), 32, pFile);
-    std::vector<char> expect1{0x01, 0x00, 0x00, 0x00, 0x12, 0x00, 0x00, 0x00,
-                             0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-                             0x00, 0x00, 0x0a, 0x00, 0x00, 0x00, '1', '2',
+    std::vector<char> expect1{0x02, 0x00, 0x00, 0x00, 0x12, 0x00, 0x00, 0x00,
+                             0x0d, 0x00, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00,
+                             0x00, 'X', 0x0a, 0x00, 0x00, 0x00, '1', '2',
                              '3', '4', '5', '6', '7', '8', '9','0'};
     REQUIRE(expect1 == buffer);
 }

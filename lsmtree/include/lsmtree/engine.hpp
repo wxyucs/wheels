@@ -12,7 +12,7 @@ class Engine {
 public:
     Engine(const std::string &path, int32_t segmentSize) 
         : path_(path), segmentSize_(segmentSize) {
-        std::string filename = path + "/" + metaFilename_;
+        std::string filename = AbsolutePath(metaFilename_);
         if (std::filesystem::exists(filename)) {
             FILE *pFile = fopen(filename.c_str(), "r");
             fread(&numSegments_, sizeof(int32_t), 1, pFile);
@@ -38,22 +38,7 @@ public:
 
     void Set(const std::string &key, const std::string &value) {
         if (not memtable_->CheckSpaceEnough(value)) {
-            std::string filename = path_ + "/" 
-                + std::to_string(numSegments_) + ".data";
-            FILE *pFile = fopen(filename.c_str(), "w");
-            assert(pFile);
-            fwrite(memtable_->GetBuffer(), 
-                   sizeof(char), 
-                   size_t(memtable_->GetCapcity()), 
-                   pFile);
-            fclose(pFile);
-            ++numSegments_;
-            filename = path_ + "/" + metaFilename_;
-            pFile = fopen(filename.c_str(), "w");
-            assert(pFile);
-            fwrite(&numSegments_, sizeof(numSegments_), 1, pFile);
-            fclose(pFile);
-
+            FlushMemTable();
             memtable_ = new MemTable(segmentSize_);
         }
         assert(memtable_->CheckSpaceEnough(value));
@@ -62,7 +47,43 @@ public:
     }
 
 private:
+    std::string AbsolutePath(const std::string &filename) {
+        return path_ + "/" + filename;
+    }
+
+    void FlushMemTable() {
+        std::string filename = 
+            AbsolutePath(std::to_string(numSegments_) + datafilePrefix_);
+        FILE *pFile = fopen(filename.c_str(), "w");
+        assert(pFile);
+        fwrite(memtable_->GetBuffer(), 
+               sizeof(char), 
+               size_t(memtable_->GetCapcity()), 
+               pFile);
+        fclose(pFile);
+
+        filename = AbsolutePath(std::to_string(numSegments_) + mapfilePrefix_);
+        pFile = fopen(filename.c_str(), "w");
+        assert(pFile);
+        assert(pFile);
+        for (auto &kv : memtableIndex_) {
+            std::string line = kv.first + "," 
+                + std::to_string(kv.second) + "\n";
+            fputs(line.c_str(), pFile);
+        }
+        fclose(pFile);
+
+        ++numSegments_;
+        filename = AbsolutePath(metaFilename_);
+        pFile = fopen(filename.c_str(), "w");
+        assert(pFile);
+        fwrite(&numSegments_, sizeof(numSegments_), 1, pFile);
+        fclose(pFile);
+    }
+
     const std::string metaFilename_ = "engine.meta";
+    const std::string datafilePrefix_ = ".data";
+    const std::string mapfilePrefix_ = ".map";
     std::string path_;
     int32_t segmentSize_;
     int32_t numSegments_;
