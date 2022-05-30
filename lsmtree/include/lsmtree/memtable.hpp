@@ -44,7 +44,9 @@ public:
         int32_t *pItem = reinterpret_cast<int32_t *>(buffer_ + startOff);
         *pItem = int32_t(value.size());
         
-        memcpy(reinterpret_cast<char *>(pItem + 1), value.data(), value.size());
+        memcpy(reinterpret_cast<char *>(pItem + 1), 
+                value.data(), 
+                value.size());
 
         offsets_[*pNumItems_] = startOff;
         *pNumItems_ = *pNumItems_ + 1;
@@ -54,7 +56,8 @@ public:
     }
 
     bool CheckSpaceEnough(const std::string &value) {
-        return free_ > int32_t(sizeof(int32_t) + sizeof(int32_t) + value.length());
+        return free_ >
+            int32_t(sizeof(int32_t) + sizeof(int32_t) + value.length());
     }
 
 private:

@@ -66,7 +66,10 @@ TEST_CASE("test_engine_storage")
     lsmtree::Engine engine("/tmp/test_lsmtree", 32);
     engine.Set("key1", "1234567890");
     engine.Set("key2", "X");
-    engine.Set("key3", "1234567890");
+    engine.Set("key3", "0987654321");
+    REQUIRE("1234567890" == engine.Get("key1"));
+    REQUIRE("X" == engine.Get("key2"));
+    REQUIRE("0987654321" == engine.Get("key3"));
 
     REQUIRE(true == fs::exists("/tmp/test_lsmtree/engine.meta"));
     int32_t numSegments;

@@ -5,6 +5,7 @@
 #include <filesystem>
 #include <map>
 #include <string>
+#include <vector>
 
 namespace lsmtree {
 
@@ -16,34 +17,74 @@ public:
         if (std::filesystem::exists(filename)) {
             FILE *pFile = fopen(filename.c_str(), "r");
             fread(&numSegments_, sizeof(int32_t), 1, pFile);
+            deactiveMaps_.resize(size_t(numSegments_));
+            for (int32_t i = 0; i < numSegments_; ++i) {
+                filename = AbsolutePath(std::to_string(i) + mapfilePrefix_);
+                pFile = fopen(filename.c_str(), "r");
+                char key[128];
+                int32_t offset;
+                while (not feof(pFile)) {
+                    fscanf(pFile, "%s,%d\n", key, &offset);
+                    deactiveMaps_[size_t(i)][key] = offset;
+                }
+            }
         } else {
             numSegments_ = 0;
         }
         memtable_ = new MemTable(segmentSize);
     }
 
-    std::string Get(const std::string &key) {
-        if (memtableIndex_.find(key) == memtableIndex_.end()) {
-            return "";
-        }
-        int32_t offset = memtableIndex_[key];
-        char *buffer = memtable_->GetBuffer();
-        buffer += offset;
-        int32_t *length = reinterpret_cast<int32_t *>(buffer);
-        assert(*length > 0);
-        buffer += sizeof(int32_t);
+    ~Engine() {
+        FlushMemTable();
+    }
 
-        return std::string(buffer, size_t(*length));
+    std::string Get(const std::string &key) {
+        if (activeMap_.find(key) != activeMap_.end()) {
+            int32_t offset = activeMap_[key];
+            char *buffer = memtable_->GetBuffer();
+            buffer += offset;
+            int32_t *length = reinterpret_cast<int32_t *>(buffer);
+            assert(*length > 0);
+            buffer += sizeof(int32_t);
+
+            return std::string(buffer, size_t(*length));
+        }
+
+        for (size_t i = 0; i < deactiveMaps_.size(); ++i) {
+            std::map<std::string, int32_t> &m = deactiveMaps_[i];
+            if (m.find(key) == m.end()) {
+                continue;
+            }
+
+            int32_t offset = m[key];
+            char *buffer =
+                reinterpret_cast<char*>(malloc(size_t(segmentSize_)));
+            std::string filename =
+                AbsolutePath(std::to_string(i) + datafilePrefix_);
+            FILE *pFile = fopen(filename.c_str(), "r");
+            fread(buffer, sizeof(char), size_t(segmentSize_), pFile);
+            int32_t *length = reinterpret_cast<int32_t *>(buffer + offset);
+            assert(*length > 0);
+
+            std::string val(buffer + offset + sizeof(int32_t), 
+                    size_t(*length));
+            free(buffer);
+            return val;
+        }
+        
+        return "";
     }
 
     void Set(const std::string &key, const std::string &value) {
         if (not memtable_->CheckSpaceEnough(value)) {
             FlushMemTable();
+            deactiveMaps_.push_back(activeMap_);
+            activeMap_.clear();
             memtable_ = new MemTable(segmentSize_);
         }
         assert(memtable_->CheckSpaceEnough(value));
         int32_t offset = memtable_->AddItem(value);
-        memtableIndex_[key] = offset;
+        activeMap_[key] = offset;
     }
 
 private:
@@ -66,7 +107,7 @@ private:
         pFile = fopen(filename.c_str(), "w");
         assert(pFile);
         assert(pFile);
-        for (auto &kv : memtableIndex_) {
+        for (auto &kv : activeMap_) {
             std::string line = kv.first + "," 
                 + std::to_string(kv.second) + "\n";
             fputs(line.c_str(), pFile);
@@ -87,8 +128,9 @@ private:
     std::string path_;
     int32_t segmentSize_;
     int32_t numSegments_;
+    std::vector<std::map<std::string, int32_t>> deactiveMaps_;
+    std::map<std::string, int32_t> activeMap_;
     MemTable *memtable_;
-    std::map<std::string, int32_t> memtableIndex_;
 };
 
 } // namespace lsmtree
