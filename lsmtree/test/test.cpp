@@ -25,7 +25,7 @@ TEST_CASE("test_memtable")
     lsmtree::MemTable mt(32);
     REQUIRE(true == mt.CheckSpaceEnough("abcd"));
     mt.AddItem("abcd");
-    std::vector<char> buffer1(mt.buffer_, mt.buffer_ + 32);
+    std::vector<char> buffer1(mt.GetBuffer(), mt.GetBuffer() + 32);
     std::vector<char> expect1{0x01, 0x00, 0x00, 0x00, 0x18, 0x00, 0x00, 0x00,
                              0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
                              0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
@@ -34,7 +34,7 @@ TEST_CASE("test_memtable")
 
     REQUIRE(true == mt.CheckSpaceEnough("789"));
     mt.AddItem("789");
-    std::vector<char> buffer2(mt.buffer_, mt.buffer_ + 32);
+    std::vector<char> buffer2(mt.GetBuffer(), mt.GetBuffer() + 32);
     std::vector<char> expect2{0x02, 0x00, 0x00, 0x00, 0x18, 0x00, 0x00, 0x00,
                              0x11, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
                              0x00, 0x03, 0x00, 0x00, 0x00, '7', '8', '9',
@@ -42,4 +42,14 @@ TEST_CASE("test_memtable")
     REQUIRE(buffer2 == expect2);
 
     REQUIRE(false == mt.CheckSpaceEnough("x"));
+}
+
+TEST_CASE("test_engine")
+{
+    lsmtree::Engine engine("/tmp");
+    engine.Set("key", "value");
+    REQUIRE("value" == engine.Get("key"));
+    REQUIRE("" == engine.Get("test"));
+    engine.Set("test", "123456");
+    REQUIRE("123456" == engine.Get("test"));
 }

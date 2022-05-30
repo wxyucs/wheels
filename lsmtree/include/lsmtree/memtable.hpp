@@ -19,6 +19,20 @@ public:
         offsets_ = pNumItems_ + 1;
     }
 
+    ~MemTable() {
+        if (buffer_) {
+            free(buffer_);
+        }
+    }
+
+    int32_t GetCapcity() {
+        return capcity_;
+    }
+
+    char *GetBuffer() {
+        return buffer_;
+    }
+
     int32_t AddItem(const std::string &value) {
         int32_t endOff = capcity_;
         if (*pNumItems_ != 0) {
@@ -43,6 +57,7 @@ public:
         return free_ > int32_t(sizeof(int32_t) + sizeof(int32_t) + value.length());
     }
 
+private:
     const int32_t capcity_;
     int32_t free_;
     char *buffer_ = nullptr;

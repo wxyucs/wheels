@@ -10,5 +10,6 @@
 #include "lsmtree/version.hpp"
 
 #include "lsmtree/memtable.hpp"
+#include "lsmtree/engine.hpp"
 
 #endif
