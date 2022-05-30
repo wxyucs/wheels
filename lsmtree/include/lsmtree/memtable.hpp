@@ -9,7 +9,7 @@ namespace lsmtree {
 
 class MemTable {
 public:
-    MemTable(int32_t capcity = 4ll * 1024 * 1024) 
+    MemTable(int32_t capcity) 
         : capcity_(capcity), free_(capcity - 1) {
         buffer_ = reinterpret_cast<char *>(malloc(size_t(capcity_)));
         memset(buffer_, 0, size_t(capcity_));
