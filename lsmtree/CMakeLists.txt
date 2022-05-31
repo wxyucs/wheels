@@ -19,7 +19,8 @@ else()
 endif()
 
 # Enable extra warnings to adhere to https://github.com/mapbox/cpp/issues/37
-set(DESIRED_WARNINGS "-Wall -Wextra -Wconversion -Wunreachable-code -Wuninitialized -pedantic-errors -Wold-style-cast -Wno-error=unused-variable -Wshadow -Wfloat-equal -Weffc++")
+# set(DESIRED_WARNINGS "-Wall -Wextra -Wconversion -Wunreachable-code -Wuninitialized -pedantic-errors -Wold-style-cast -Wno-error=unused-variable -Wshadow -Wfloat-equal -Weffc++")
+set(DESIRED_WARNINGS "-Wall -Wextra -Wconversion -Wunreachable-code -Wuninitialized -pedantic-errors -Wold-style-cast -Wno-error=unused-variable -Wno-error=unused-parameter -Wshadow -Wfloat-equal -Weffc++")
 if(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
   set(DESIRED_WARNINGS "${DESIRED_WARNINGS} -Wmost")
 endif()
@@ -45,9 +46,12 @@ file(GLOB TEST_SOURCES test/*.cpp)
 add_executable(unit-tests ${TEST_SOURCES})
 
 # libbenchmark.a supports threads and therefore needs pthread support
-find_package(Threads REQUIRED)
-file(GLOB BENCH_SOURCES bench/*.cpp)
-add_executable(bench-tests ${BENCH_SOURCES})
+# find_package(Threads REQUIRED)
+# file(GLOB BENCH_SOURCES bench/*.cpp)
+# add_executable(bench-tests ${BENCH_SOURCES})
 
 # link benchmark static library to the bench-tests binary so the bench tests know where to find the benchmark impl code
-target_link_libraries(bench-tests ${MASON_PACKAGE_benchmark_STATIC_LIBS} ${CMAKE_THREAD_LIBS_INIT})
+# target_link_libraries(bench-tests ${MASON_PACKAGE_benchmark_STATIC_LIBS} ${CMAKE_THREAD_LIBS_INIT})
+
+file(GLOB CLI_SOURCES cli/*.cpp)
+add_executable(cli ${CLI_SOURCES})
