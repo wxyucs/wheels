@@ -3,7 +3,9 @@
 #include "lsmtree/memtable.hpp"
 #include <cstdio>
 #include <filesystem>
+#include <fstream>
 #include <map>
+#include <set>
 #include <string>
 #include <vector>
 
@@ -20,11 +22,16 @@ public:
             deactiveMaps_.resize(size_t(numSegments_));
             for (int32_t i = 0; i < numSegments_; ++i) {
                 filename = AbsolutePath(std::to_string(i) + mapfilePrefix_);
-                pFile = fopen(filename.c_str(), "r");
-                char key[128];
-                int32_t offset;
-                while (not feof(pFile)) {
-                    fscanf(pFile, "%s,%d\n", key, &offset);
+                std::ifstream ifile(filename);
+                std::string line;
+                while (std::getline(ifile, line)) {
+                    size_t pos = line.find(",");
+                    if (pos == std::string::npos or
+                            pos == line.size() - 1) {
+                        continue;
+                    }
+                    std::string key = line.substr(0, pos);
+                    int32_t offset = std::atoi(line.substr(pos + 1).c_str());
                     deactiveMaps_[size_t(i)][key] = offset;
                 }
             }
@@ -85,6 +92,17 @@ public:
         assert(memtable_->CheckSpaceEnough(value));
         int32_t offset = memtable_->AddItem(value);
         activeMap_[key] = offset;
+    }
+
+    std::vector<std::string> Keys() {
+        std::set<std::string> keys;
+        for (auto &m : deactiveMaps_) {
+            for (auto &kv : m) {
+                keys.insert(kv.first);
+            }
+        }
+
+        return std::vector<std::string>{keys.begin(), keys.end()};
     }
 
 private:
