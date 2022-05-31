@@ -20,9 +20,7 @@ public:
     }
 
     ~MemTable() {
-        if (buffer_) {
-            free(buffer_);
-        }
+        free(buffer_);
     }
 
     int32_t GetCapcity() {
