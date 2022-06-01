@@ -36,6 +36,7 @@ static void BM_exclaim(benchmark::State& state) // NOLINT google-runtime-referen
 static void BM_engine(benchmark::State& state)
 {
     using namespace std;
+    using namespace benchmark;
     using namespace lsmtree;
     Engine *engine = nullptr;
     size_t repeat = size_t(state.range(0));
@@ -64,6 +65,9 @@ static void BM_engine(benchmark::State& state)
     {
         // Teardown code here.
         delete engine;
+        state.counters["insert_items_per_seconds"] =
+            Counter(double(repeat), Counter::kIsRate);
+        // state.SetItemsProcessed(int64_t(repeat));
     }
 }
 
@@ -71,7 +75,9 @@ auto main(int argc, char* argv[]) -> int
 {
     // benchmark::RegisterBenchmark("BM_exclaim", BM_exclaim)->Threads(2)->Threads(4)->Threads(8);                   // NOLINT clang-analyzer-cplusplus.NewDeleteLeaks
     // benchmark::RegisterBenchmark("BM_expensive", BM_expensive)->Threads(2)->Threads(4)->Threads(8)->Arg(1000000); // NOLINT clang-analyzer-cplusplus.NewDeleteLeaks
-    benchmark::RegisterBenchmark("BM_engine", BM_engine)->Arg(100000); // NOLINT clang-analyzer-cplusplus.NewDeleteLeaks
+    benchmark::RegisterBenchmark("BM_engine", BM_engine)->
+        Unit(benchmark::kMillisecond)->
+        Arg(100000); // NOLINT clang-analyzer-cplusplus.NewDeleteLeaks
 
     benchmark::Initialize(&argc, argv);
     benchmark::RunSpecifiedBenchmarks();

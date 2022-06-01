@@ -6,4 +6,5 @@
     - [ ] compact
     - [ ] compress
     - [ ] WAL
+    - [ ] multi-threading
 - [ ] B-tree
