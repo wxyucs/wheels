@@ -5,10 +5,7 @@
  *
  * Hello World implements a standard namespace with a few available functions.
  */
-#include "lsmtree/exclaim.hpp"
-#include "lsmtree/expensive.hpp"
 #include "lsmtree/version.hpp"
-
 #include "lsmtree/memtable.hpp"
 #include "lsmtree/engine.hpp"
 

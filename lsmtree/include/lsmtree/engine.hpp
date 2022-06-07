@@ -1,11 +1,13 @@
 #pragma once
 
 #include "lsmtree/memtable.hpp"
+#include <cassert>
 #include <cstdio>
 #include <filesystem>
 #include <fstream>
 #include <map>
 #include <set>
+#include <stdexcept>
 #include <string>
 #include <vector>
 
@@ -14,7 +16,8 @@ namespace lsmtree {
 class Engine {
 public:
     Engine(const std::string &path, int32_t segmentSize) 
-        : path_(path), segmentSize_(segmentSize) {
+        : path_(path), segmentSize_(segmentSize), deactiveMaps_(), 
+        activeMap_() {
         std::string filename = AbsolutePath(metaFilename_);
         if (std::filesystem::exists(filename)) {
             FILE *pFile = fopen(filename.c_str(), "r");
@@ -40,6 +43,9 @@ public:
         }
         memtable_ = new MemTable(segmentSize);
     }
+
+    Engine(const Engine&) = delete;
+    Engine& operator=(const Engine&) = delete;
 
     ~Engine() {
         FlushMemTable();
@@ -144,11 +150,11 @@ private:
     const std::string datafilePrefix_ = ".data";
     const std::string mapfilePrefix_ = ".map";
     std::string path_;
-    int32_t segmentSize_;
-    int32_t numSegments_;
+    int32_t segmentSize_ = 0;
+    int32_t numSegments_ = 0;
     std::vector<std::map<std::string, int32_t>> deactiveMaps_;
     std::map<std::string, int32_t> activeMap_;
-    MemTable *memtable_;
+    MemTable *memtable_ = nullptr;
 };
 
 } // namespace lsmtree

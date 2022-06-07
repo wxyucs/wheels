@@ -20,7 +20,7 @@ endif()
 
 # Enable extra warnings to adhere to https://github.com/mapbox/cpp/issues/37
 # set(DESIRED_WARNINGS "-Wall -Wextra -Wconversion -Wunreachable-code -Wuninitialized -pedantic-errors -Wold-style-cast -Wno-error=unused-variable -Wshadow -Wfloat-equal -Weffc++")
-set(DESIRED_WARNINGS "-Wall -Wextra -Wconversion -Wunreachable-code -Wuninitialized -pedantic-errors -Wold-style-cast -Wno-error=unused-variable -Wno-error=unused-parameter -Wshadow -Wfloat-equal -Weffc++")
+set(DESIRED_WARNINGS "-Wall -Wextra -Wconversion -Wunreachable-code -Wuninitialized -pedantic-errors -Wold-style-cast -Wno-error=unused-variable -Wno-error=unused-parameter -Wno-unused-result -Wshadow -Wfloat-equal -Weffc++")
 if(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
   set(DESIRED_WARNINGS "${DESIRED_WARNINGS} -Wmost")
 endif()

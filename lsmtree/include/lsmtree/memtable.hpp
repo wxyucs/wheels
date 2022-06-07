@@ -1,6 +1,8 @@
 #pragma once
 
+#include <cassert>
 #include <cstdint>
+#include <cstring>
 #include <iostream>
 #include <memory>
 #include <string>
@@ -18,6 +20,9 @@ public:
         pNumItems_ = reinterpret_cast<int32_t *>(buffer_);
         offsets_ = pNumItems_ + 1;
     }
+
+    MemTable(const MemTable&) = delete;
+    MemTable& operator=(const MemTable&) = delete;
 
     ~MemTable() {
         free(buffer_);
